@@ -4,6 +4,7 @@ import Application from "../models/Application.js";
 import jwt from "jsonwebtoken";
 import HttpError from "../utils/HttpError.js";
 import verifyJwt from "../middlewares/verifyJwt.js";
+import User from "../models/User.js";
 
 const router = Router();
 
@@ -39,8 +40,7 @@ router.get("/", verifyJwt, async (req, res, next) => {
 
     const decrypted = apps.map((app) => {
       return {
-        ...app,
-        password: decryptData(app?.password)
+        ...app
       };
     });
     res.send(decrypted);
@@ -50,13 +50,19 @@ router.get("/", verifyJwt, async (req, res, next) => {
   }
 });
 
-router.post("/decrypt", verifyJwt, async (req, res, next) => {
+router.get("/:appId/decrypt/", verifyJwt, async (req, res, next) => {
   try {
-    const { password } = req.body;
+    const { appId } = req.params;
 
-    if (!password) throw new HttpError(400, "password is empty");
+    const application = await Application.findById(appId).lean();
 
-    const text = decryptData(password);
+    if (!application) throw new HttpError(404, "application not found");
+
+    if (application.user.toString() !== req.user.id) {
+      throw new HttpError(403, "You are not authorized");
+    }
+
+    const text = decryptData(application.password);
 
     res.send({ decoded: text });
   } catch (error) {
@@ -68,7 +74,7 @@ router.delete("/:id", verifyJwt, async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const app = await Application.findById(id).populate('user').lean();
+    const app = await Application.findById(id).populate("user").lean();
 
     if (!app) throw new HttpError(404, "App not found");
 
@@ -95,7 +101,7 @@ router.put("/:id", verifyJwt, async (req, res, next) => {
 
     if (!app) throw new HttpError(404, "App not found");
 
-    console.log(app.user, req.user.id)
+    console.log(app.user, req.user.id);
 
     if (app.user.toString() !== req.user.id)
       throw new HttpError(
@@ -105,9 +111,11 @@ router.put("/:id", verifyJwt, async (req, res, next) => {
 
     const updatedApp = await Application.findByIdAndUpdate(
       id,
-      { name, username, website, password },
+      { name, username, website, password: encryptData(password) },
       { new: 1 }
-    );
+    ).lean();
+
+    updatedApp.password = decryptData(updatedApp.password);
 
     res.send(updatedApp);
   } catch (error) {
@@ -145,7 +153,5 @@ router.get("/search", verifyJwt, async (req, res, next) => {
     next(error);
   }
 });
-
-
 
 export default router;

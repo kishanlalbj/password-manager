@@ -5,8 +5,10 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "prestart": "node --env-file=.env  ./db/scripts/migrations.js",
     "dev": "nodemon server",
-    "start": "node server"
+    "start": "node server",
+    "start:migrate": "node --env-file=.env  ./db/scripts/migrations.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

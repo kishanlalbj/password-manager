@@ -1,16 +1,27 @@
 import { EyeClosedIcon, EyeIcon } from "lucide-react";
 import { useState } from "react";
 
-const MaskedText = ({ text }: { text: string | undefined }) => {
+const MaskedText = ({
+  text,
+  onView,
+  loading
+}: {
+  text: string | undefined;
+  onView: () => void;
+  loading: boolean;
+}) => {
   const [show, setShow] = useState(false);
 
-  const handleToggle = () => setShow((prev) => !prev);
+  const handleToggle = () => {
+    onView();
+    setShow((prev) => !prev);
+  };
 
   if (!text) return <></>;
 
   return (
     <div>
-      {show ? (
+      {show && !loading ? (
         <p
           className="flex items-center gap-1 line-clamp-1 w-full"
           role="button"

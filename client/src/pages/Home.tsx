@@ -7,21 +7,21 @@ import AppDetail from "../components/AppDetail";
 import { type IApp } from "../types";
 import ApplicationForm from "../components/ApplicationForm";
 import SearchInput from "../components/SearchInput";
-import { deleteAppApi, saveAppApi } from "../api";
 import useAxiosInterceptors from "../hooks/useAxiosInterceptors";
 import { api } from "../utils";
 
 type Apps = IApp[];
 
 const Home = () => {
-
   useAxiosInterceptors();
   const [showModal, setShowModal] = useState(false);
 
   const [apps, setApps] = useState<Apps>([]);
 
-  const [appsLoading, setAppsLoading] = useState(false);
+  const [, setAppsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  const [passwordLoading, setPasswordLoading] = useState(false);
 
   const [selectedApp, setSelectedApp] = useState<IApp | null | undefined>(null);
 
@@ -33,13 +33,13 @@ const Home = () => {
 
   const handleSaveModal = async (formData: Omit<IApp, "_id">) => {
     try {
-      const res = await api.post(`/api/`, formData)
+      const res = await api.post(`/api/`, formData);
 
       setApps((prev) => [...prev, res.data]);
 
       handleToggleModal();
     } catch (error) {
-      console.log(error.message);
+      if (error instanceof Error) console.log(error.message);
     }
   };
 
@@ -54,7 +54,7 @@ const Home = () => {
       setApps((prev) => prev.filter((app) => app._id !== res.data));
       setSelectedApp(null);
     } catch (error) {
-      console.log(error.message);
+      if (error instanceof Error) console.log(error.message);
     }
   };
 
@@ -70,18 +70,37 @@ const Home = () => {
     }
   };
 
+  const handleViewPassword = async (id: string) => {
+    try {
+      setPasswordLoading(true);
+      const res = await api.get(`/api/${id}/decrypt`);
+      const copy = [...apps];
+      const idx = copy.findIndex((e) => e._id === id);
+      if (idx != -1) copy[idx].password = res.data.decoded;
+
+      setApps(copy);
+    } catch (error) {
+      if (error instanceof Error) console.log(error);
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   useEffect(() => {
     setAppsLoading(true);
 
-    api.get('/api/').then(res => {
-      console.log(res.data)
-      setApps(res.data)
-    }).catch(err => {
-      setError(err)
-    }).finally(() => {
-      setAppsLoading(false)
-    })
-   
+    api
+      .get("/api/")
+      .then((res) => {
+        console.log(res.data);
+        setApps(res.data);
+      })
+      .catch((err) => {
+        setError(err);
+      })
+      .finally(() => {
+        setAppsLoading(false);
+      });
   }, []);
 
   return (
@@ -103,7 +122,12 @@ const Home = () => {
             {apps.length === 0 && <p>No apps added</p>}
             {apps.map((app) => {
               return (
-                <ListItem key={app._id} {...app} onClick={handleAppClick} current={selectedApp?._id === app._id} />
+                <ListItem
+                  key={app._id}
+                  {...app}
+                  onClick={handleAppClick}
+                  current={selectedApp?._id === app._id}
+                />
               );
             })}
           </div>
@@ -120,6 +144,8 @@ const Home = () => {
               app={selectedApp}
               onDelete={handleDelete}
               onSave={handleAddApp}
+              onViewPassword={handleViewPassword}
+              passwordLoading={passwordLoading}
             />
           )}
         </div>

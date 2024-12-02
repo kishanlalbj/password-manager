@@ -14,6 +14,7 @@ const Layout = () => {
   return (
     <>
       <Header onLogout={handleLogout} />
+      
       <div className="home-grid">
         <div className="container">
           <Outlet />

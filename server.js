@@ -7,9 +7,9 @@ import cors from "cors";
 
 configDotenv();
 
-import db from "./db/index.js";
+import { connectToDb } from "./db/index.js";
 
-db();
+connectToDb();
 
 const app = express();
 

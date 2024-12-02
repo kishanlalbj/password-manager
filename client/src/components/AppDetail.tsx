@@ -15,15 +15,21 @@ import Modal from "./Modal";
 import ApplicationForm from "./ApplicationForm";
 import { api } from "../utils";
 
-const AppDetail = ({
-  app,
-  onDelete,
-  onSave
-}: {
+type AppDetailProps = {
   app: IApp | undefined | null;
   onDelete: (arg0: string) => void;
   onSave: (app: IApp) => void;
-}) => {
+  onViewPassword: (id: string) => void;
+  passwordLoading: boolean;
+};
+
+const AppDetail = ({
+  app,
+  onDelete,
+  onSave,
+  onViewPassword,
+  passwordLoading
+}: AppDetailProps) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
@@ -97,7 +103,11 @@ const AppDetail = ({
                 onClick={handleCopy}
               />
 
-              <MaskedText text={app?.password}></MaskedText>
+              <MaskedText
+                text={app?.password}
+                loading={passwordLoading}
+                onView={() => onViewPassword(app?._id)}
+              ></MaskedText>
               {showCopied && (
                 <div className="absolute top-full left-0 w-fit px-2 py-1 bg-[#c1c1c1] text-xs text-black rounded-md">
                   Copied

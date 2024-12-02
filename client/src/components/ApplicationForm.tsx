@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { IApp } from "../types";
 import Button from "./Button";
 import { EyeClosedIcon, EyeIcon, SaveIcon } from "lucide-react";
@@ -24,6 +24,8 @@ const ApplicationForm = ({
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [passwordErr, setPasswordErr] = useState("");
+  const [passwordTouched, setPasswordTouched] = useState(false);
 
   const handlePasswordToggle = () => {
     setShowPassword((prev) => !prev);
@@ -52,6 +54,27 @@ const ApplicationForm = ({
       website: ""
     });
   };
+
+  const validatePassword = useCallback(() => {
+    const lengthRegex = /.{8,}/; // At least 8 characters
+    const numberRegex = /\d/; // At least 1 number
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/; // At least 1 special character
+
+    if (!lengthRegex.test(formData.password)) {
+      return "Password must be at least 8 characters long.";
+    }
+    if (!numberRegex.test(formData.password)) {
+      return "Password must contain at least one number.";
+    }
+    if (!specialCharRegex.test(formData.password)) {
+      return "Password must contain at least one special character.";
+    }
+    return "";
+  }, [formData.password]);
+
+  useEffect(() => {
+    if (passwordTouched) setPasswordErr(validatePassword());
+  }, [formData.password, validatePassword, passwordTouched]);
 
   return (
     <>
@@ -82,11 +105,14 @@ const ApplicationForm = ({
           <label htmlFor="password">Password</label>
           <div className="relative">
             <input
+              className={passwordErr ? "border border-red-500" : ""}
               type={showPassword ? "text" : "password"}
               placeholder="Password"
               name="password"
               value={formData.password}
               onChange={handleChange}
+              onFocus={() => setPasswordTouched(true)}
+              required
             />
 
             {!showPassword ? (
@@ -101,6 +127,13 @@ const ApplicationForm = ({
               />
             )}
           </div>
+          {passwordErr && (
+            <div>
+              <p className="text-red-500 text-sm">
+                Must have atleast 8 chars, 1 number and 1 special char{" "}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="mb-3">
@@ -113,6 +146,7 @@ const ApplicationForm = ({
             onChange={handleChange}
           />
         </div>
+
         <div>
           <Button onClick={handleSubmit}>
             <SaveIcon size={"16"} />

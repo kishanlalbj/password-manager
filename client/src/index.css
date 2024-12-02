@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  body {
+    background-color: #262626;
+    color: #f2f2f2;
+  }
+  .card {
+    @apply bg-[#1c1c1c];
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    padding: 24px;
+  }
+
+  label {
+    @apply text-xs mb-2;
+  }
+
+  input {
+    outline: none;
+    @apply border border-transparent px-2 py-3 rounded-lg block w-full bg-[#1a1a1a];
+  }
+}
+
+@layer utilities {
+  .container {
+    @apply w-[90%] md:w-5/6 lg:w-3/4 xl:w-5/6 mx-auto;
+  }
+
+  th,
+  td {
+    @apply px-2 py-3;
+  }
+}
+
+/* .home-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  grid-template-rows: 100%;
+  height: 100vh;
+} */

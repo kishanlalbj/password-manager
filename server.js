@@ -4,6 +4,13 @@ import morgan from "morgan";
 import indexRouter from "./routes/index.js";
 import authRouter from "./routes/auth.js";
 import cors from "cors";
+import path from "path";
+
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 configDotenv();
 
@@ -15,13 +22,16 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin:
+      process.env.NODE_ENV === "development" ? "http://localhost:5173" : "",
     credentials: true
   })
 );
 app.use(morgan("dev"));
 app.use(express.json({}));
 app.use(express.urlencoded({ extended: false }));
+
+app.use(express.static(path.resolve(__dirname, "./client/dist/")));
 
 app.use("/api", indexRouter);
 app.use("/api/auth", authRouter);

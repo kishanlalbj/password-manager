@@ -24,17 +24,17 @@ const useAxiosInterceptors = () => {
         try {
           const res = await api.get("/api/auth/refresh-token");
           setUser({ accessToken: res.data.access_token });
-          originalRequest.headers.authorization = `Bearer ${res.data.access_token}`
-          originalRequest._retry = true
+          originalRequest.headers.authorization = `Bearer ${res.data.access_token}`;
+          originalRequest._retry = true;
 
-          return api(originalRequest)
+          return api(originalRequest);
         } catch (error) {
-          setUser({accessToken: ''});
-         return Promise.reject(error)
+          setUser({ accessToken: "" });
+          return Promise.reject(error);
         }
       }
 
-     return Promise.reject(error)
+      return Promise.reject(error);
     }
   );
 };

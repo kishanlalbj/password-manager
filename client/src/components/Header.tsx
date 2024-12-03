@@ -7,21 +7,19 @@ import { useEffect, useState } from "react";
 type HeaderProps = { onLogout: () => void };
 
 const Header = ({ onLogout }: HeaderProps) => {
-  const [data, setData] = useState({})
-  const {user} = useUser();
+  const [data, setData] = useState<{ email: string }>({
+    email: ""
+  });
+  const { user } = useUser();
 
-  
-  useEffect(() => { 
+  useEffect(() => {
     try {
-      const decoded = jwtDecode(user?.accessToken)
-      setData(decoded)  
+      const decoded: { email: string } = jwtDecode(user?.accessToken ?? "");
+      setData(decoded);
     } catch (error) {
-     
+      if (error instanceof Error) console.log(error);
     }
-    
-  }, [user, user?.accessToken])
-
-
+  }, [user, user?.accessToken]);
 
   return (
     <div className="text-slate-800 bg-[#1a1a1a] shadow-sm h-14">

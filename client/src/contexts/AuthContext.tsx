@@ -1,23 +1,34 @@
-import { createContext, ReactNode, SetStateAction, useContext, useState } from "react";
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, ReactNode, useContext, useState } from "react";
 
+// type User = {
+//   user: { accessToken: string } | null;
+//   setUser: React.Dispatch<SetStateAction<null | TUser>>;
+// };
 
-type User = {
-    user: {accessToken: string} | null,
-    setUser: React.Dispatch<SetStateAction<null>>
-}
+type TUser =
+  | {
+      accessToken: string;
+    }
+  | null
+  | undefined;
 
-const AuthContext = createContext<User>({
-    user: null,
-    setUser: () => {}
+const AuthContext = createContext<{
+  user: { accessToken: string } | null | undefined;
+  setUser: React.Dispatch<React.SetStateAction<TUser>>;
+}>({
+  user: null,
+  setUser: () => {}
 });
 
-export const AuthContextProvider = ({children}: {children: ReactNode}) => {
-    const [user, setUser] = useState(null)
+export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<TUser>(null);
 
-
-    return <AuthContext.Provider value={{user, setUser}}>
-            {children}
+  return (
+    <AuthContext.Provider value={{ user, setUser }}>
+      {children}
     </AuthContext.Provider>
-}
+  );
+};
 
 export const useUser = () => useContext(AuthContext);

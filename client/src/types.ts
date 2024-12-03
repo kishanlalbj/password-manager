@@ -1,5 +1,5 @@
 export interface IApp {
-  _id: string;
+  _id?: string | undefined | null;
   name: string;
   website?: string;
   username: string;

@@ -106,7 +106,7 @@ const AppDetail = ({
               <MaskedText
                 text={app?.password}
                 loading={passwordLoading}
-                onView={() => onViewPassword(app?._id)}
+                onView={() => onViewPassword(app?._id ?? "")}
               ></MaskedText>
               {showCopied && (
                 <div className="absolute top-full left-0 w-fit px-2 py-1 bg-[#c1c1c1] text-xs text-black rounded-md">

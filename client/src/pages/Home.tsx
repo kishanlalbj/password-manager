@@ -51,7 +51,9 @@ const Home = () => {
   const handleDelete = async (id: string) => {
     try {
       const res = await api.delete(`/api/${id}`);
-      setApps((prev) => prev.filter((app) => app._id !== res.data));
+      const cpy = [...apps];
+
+      setApps(cpy.filter((app) => app._id !== res.data.id));
       setSelectedApp(null);
     } catch (error) {
       if (error instanceof Error) console.log(error.message);

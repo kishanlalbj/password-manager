@@ -74,6 +74,10 @@ const ApplicationForm = ({
 
   useEffect(() => {
     if (passwordTouched) setPasswordErr(validatePassword());
+
+    return () => {
+      setPasswordTouched(false);
+    };
   }, [formData.password, validatePassword, passwordTouched]);
 
   return (

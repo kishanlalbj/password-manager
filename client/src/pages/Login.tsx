@@ -8,11 +8,11 @@ import useAxiosInterceptors from "../hooks/useAxiosInterceptors";
 const Login = () => {
   useAxiosInterceptors();
   const navigate = useNavigate();
-  const {setUser} = useUser();
+  const { setUser } = useUser();
 
   const [creds, setCreds] = useState({
-    email: "john_doe@gmail.com",
-    password: "test",
+    email: "",
+    password: ""
   });
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -21,7 +21,7 @@ const Login = () => {
 
       const res = await api.post(`/api/auth/login`, creds);
 
-      setUser({accessToken: res.data.access_token})
+      setUser({ accessToken: res.data.access_token });
       navigate("/home");
       setCreds({ email: "", password: "" });
     } catch (error) {
@@ -32,13 +32,13 @@ const Login = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setCreds((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.value
     }));
   };
 
   useEffect(() => {
     const isAuth = async () => {
-      const res = await api.get('/api/auth/me');
+      const res = await api.get("/api/auth/me");
 
       if (res.data.authenticated) navigate("/home");
     };

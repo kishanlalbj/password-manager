@@ -5,9 +5,8 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "prestart": "node --env-file=.env  ./db/scripts/migrations.js",
     "dev": "nodemon server",
-    "start": "node server",
+    "start": "node --env-file=.env.prod server",
     "start:migrate": "node --env-file=.env  ./db/scripts/migrations.js"
   },
   "dependencies": {

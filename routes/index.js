@@ -4,7 +4,6 @@ import Application from "../models/Application.js";
 import jwt from "jsonwebtoken";
 import HttpError from "../utils/HttpError.js";
 import verifyJwt from "../middlewares/verifyJwt.js";
-import User from "../models/User.js";
 
 const router = Router();
 
@@ -36,7 +35,7 @@ router.post("/", verifyJwt, async (req, res) => {
 
 router.get("/", verifyJwt, async (req, res, next) => {
   try {
-    const apps = await Application.find({ user: req.user.id }).lean();
+    const apps = await Application.find({ user: req.user.id }).lean().exec();
 
     const decrypted = apps.map((app) => {
       return {
@@ -54,7 +53,7 @@ router.get("/:appId/decrypt/", verifyJwt, async (req, res, next) => {
   try {
     const { appId } = req.params;
 
-    const application = await Application.findById(appId).lean();
+    const application = await Application.findById(appId).lean().exec();
 
     if (!application) throw new HttpError(404, "application not found");
 
@@ -74,7 +73,7 @@ router.delete("/:id", verifyJwt, async (req, res, next) => {
   try {
     const { id } = req.params;
 
-    const app = await Application.findById(id).populate("user").lean();
+    const app = await Application.findById(id).populate("user").lean().exec();
 
     if (!app) throw new HttpError(404, "App not found");
 
@@ -84,7 +83,7 @@ router.delete("/:id", verifyJwt, async (req, res, next) => {
         "You are not authorized to delete this application"
       );
 
-    await Application.findByIdAndDelete(id).lean();
+    await Application.findByIdAndDelete(id).exec();
 
     res.send({ id });
   } catch (error) {
@@ -97,11 +96,9 @@ router.put("/:id", verifyJwt, async (req, res, next) => {
     const { id } = req.params;
     const { name, username, website, password } = req.body;
 
-    const app = await Application.findById(id).lean();
+    const app = await Application.findById(id).lean().exec();
 
     if (!app) throw new HttpError(404, "App not found");
-
-    console.log(app.user, req.user.id);
 
     if (app.user.toString() !== req.user.id)
       throw new HttpError(
@@ -113,7 +110,7 @@ router.put("/:id", verifyJwt, async (req, res, next) => {
       id,
       { name, username, website, password: encryptData(password) },
       { new: 1 }
-    ).lean();
+    ).exec();
 
     updatedApp.password = decryptData(updatedApp.password);
 
@@ -134,7 +131,9 @@ router.get("/search", verifyJwt, async (req, res, next) => {
     const totalPages = await Application.find({
       name: { $regex: q, $options: "i" },
       user: req.user.id
-    }).countDocuments();
+    })
+      .countDocuments()
+      .exec();
 
     const apps = await Application.find({
       name: { $regex: q, $options: "i" },
@@ -142,7 +141,8 @@ router.get("/search", verifyJwt, async (req, res, next) => {
     })
       .skip((page - 1) * limit)
       .limit(limit)
-      .lean();
+      .lean()
+      .exec();
 
     res.send({
       page,

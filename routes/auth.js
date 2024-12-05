@@ -12,7 +12,7 @@ router.post("/register", async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const userExists = await User.findOne({ email }).lean();
+    const userExists = await User.findOne({ email }).lean().exec();
 
     if (userExists) throw new HttpError(409, "email already registered");
 
@@ -35,7 +35,7 @@ router.post("/login", async (req, res, next) => {
 
     if (!email || !password) throw new HttpError(400, "Fields empty");
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).lean().exec();
 
     if (!user) throw new HttpError(401, "Invalid credentials.");
 
@@ -60,13 +60,6 @@ router.post("/login", async (req, res, next) => {
       "refresh"
     );
 
-    // res.setHeader(
-    //   "Set-Cookie",
-    //   `rtkn=${refresh_token}; secure samesite=none; httponly maxage=${
-    //     24 * 60 * 60 * 1000
-    //   }`
-    // );
-
     res.cookie("rtkn", refresh_token, {
       secure: true,
       sameSite: "None",
@@ -85,7 +78,7 @@ router.post("/login", async (req, res, next) => {
 
 router.get("/me", verifyJwt, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id).lean();
+    const user = await User.findById(req.user.id).lean().exec();
 
     res.send({ user, authenticated: true });
   } catch (error) {

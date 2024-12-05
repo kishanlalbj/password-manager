@@ -10,19 +10,18 @@ type TUser =
   | {
       accessToken: string;
     }
-  | null
   | undefined;
 
 const AuthContext = createContext<{
   user: { accessToken: string } | null | undefined;
   setUser: React.Dispatch<React.SetStateAction<TUser>>;
 }>({
-  user: null,
+  user: { accessToken: "" },
   setUser: () => {}
 });
 
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<TUser>(null);
+  const [user, setUser] = useState<TUser>({ accessToken: "" });
 
   return (
     <AuthContext.Provider value={{ user, setUser }}>

@@ -4,9 +4,13 @@ WORKDIR /app
 
 COPY package.json /app
 
-RUN npm install
+COPY client/package.json /app/client/package.json
+
+RUN npm install && npm run install:client
 
 COPY . .
+
+RUN npm run build
 
 EXPOSE 8080
 

@@ -22,7 +22,7 @@ router.post("/register", async (req, res, next) => {
 
     if (!savedUser) throw new HttpError(500, "Error registering user");
 
-    res.send("registered Successfully");
+    res.json({ success: true, message: "Register successful" });
   } catch (error) {
     console.log(error);
     next(error);
@@ -48,14 +48,14 @@ router.post("/login", async (req, res, next) => {
     const access_token = await generateAccessToken({
       id: user?._id,
       email: user?.email,
-      iat: Math.floor(Date.now() / 1000) - 30,
+      iat: Math.floor(Date.now() / 1000) - 30
     });
 
     const refresh_token = await generateAccessToken(
       {
         id: user?._id,
         email: user?.email,
-        iat: Math.floor(Date.now() / 1000) - 30,
+        iat: Math.floor(Date.now() / 1000) - 30
       },
       "refresh"
     );
@@ -71,11 +71,11 @@ router.post("/login", async (req, res, next) => {
       secure: true,
       sameSite: "None",
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      maxAge: 24 * 60 * 60 * 1000 // 1 day
     });
 
     res.send({
-      access_token,
+      access_token
     });
   } catch (error) {
     console.log(error);
@@ -95,7 +95,7 @@ router.get("/me", verifyJwt, async (req, res, next) => {
 
 router.post("/logout", verifyJwt, (req, res) => {
   try {
-    res.clearCookie();
+    res.clearCookie("rtkn");
 
     res.send({
       success: true,
@@ -110,11 +110,11 @@ router.get("/refresh-token", async (req, res, next) => {
   try {
     const cookies = parseCookies(req.headers.cookie);
 
-  await jwt.verify(
-      cookies.rtkn,
+    await jwt.verify(
+      cookies?.rtkn,
       process.env.JWT_REFRESH_SECRET,
       async (error, payload) => {
-        if (error) throw new HttpError(401, "Unauthorized");
+        if (error) throw new HttpError(403, "Forbidden");
 
         req.user = payload;
 
@@ -123,7 +123,7 @@ router.get("/refresh-token", async (req, res, next) => {
         const access_token = await generateAccessToken({
           id: user?._id,
           email: user?.email,
-          iat: Math.floor(Date.now() / 1000) - 30,
+          iat: Math.floor(Date.now() / 1000) - 30
         });
 
         res.send({ access_token });
@@ -134,13 +134,11 @@ router.get("/refresh-token", async (req, res, next) => {
   }
 });
 
-
-router.post('/reset-password', async (req, res, next) => {
- try {
-
- } catch (error) {
-  next(error)
- } 
-})
+router.post("/reset-password", async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+});
 
 export default router;

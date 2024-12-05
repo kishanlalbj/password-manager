@@ -1,3 +1,9 @@
 node_modules
 *.log
 *.debug
+Dockerfile
+.dockerignore
+.env
+dist
+
+README.md

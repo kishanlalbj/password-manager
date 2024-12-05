@@ -5,9 +5,9 @@ const generateAccessToken = (payload, type) => {
     jwt.sign(
       payload,
       type === "refresh"
-        ? process.env.JWT_REFRESh_SECRET
+        ? process.env.JWT_REFRESH_SECRET
         : process.env.JWT_ACCESS_SECRET,
-      { expiresIn: type !== 'refresh' ? 60 * 60: '7d' },
+      { expiresIn: type !== "refresh" ? 60 * 60 : "7d" },
       (err, token) => {
         if (err) {
           console.log(err);

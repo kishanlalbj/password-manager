@@ -1,17 +1,30 @@
-FROM node:22
+FROM node:22 AS builder
 
 WORKDIR /app
 
-COPY package.json /app
+COPY client/package.json client/yarn.lock ./
 
-COPY client/package.json /app/client/package.json
+RUN yarn install --frozen-lockfile
 
-RUN npm install && npm run install:client
+COPY client/ ./
 
-COPY . .
+RUN yarn build
 
-RUN npm run build
+###
 
-EXPOSE 8080
+FROM node:22-alpine
 
-CMD ["npm", "start"]
+WORKDIR /app
+
+COPY server/package.json server/yarn.lock ./
+
+RUN yarn install --production --frozen-lockfile
+
+COPY --from=builder /app/dist /app/dist
+
+ENV NODE_ENV=production
+
+EXPOSE 8081
+
+CMD ["node", "server"]
+

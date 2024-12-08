@@ -1,9 +1,11 @@
-node_modules
-*.log
-*.debug
+server/node_modules
+client/node_modules/
+client/dist/
 Dockerfile
 .dockerignore
-.env
+*.md
+test
+*.http
+*.log
 dist
-
-README.md
+*.cjs

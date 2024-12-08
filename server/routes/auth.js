@@ -35,7 +35,7 @@ router.post("/login", async (req, res, next) => {
 
     if (!email || !password) throw new HttpError(400, "Fields empty");
 
-    const user = await User.findOne({ email }).lean().exec();
+    const user = await User.findOne({ email }).exec();
 
     if (!user) throw new HttpError(401, "Invalid credentials.");
 

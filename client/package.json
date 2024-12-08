@@ -1,11 +1,11 @@
 {
-  "name": "trello-clone",
+  "name": "password-manager-client",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "pwd & ls node_modules/@rollup & vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -16,8 +16,7 @@
     "moment": "^2.30.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.0.1",
-    "server": "file:.."
+    "react-router-dom": "^7.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.13.0",

@@ -20,11 +20,13 @@ COPY server/package.json server/yarn.lock ./
 
 RUN yarn install --production --frozen-lockfile
 
-COPY --from=builder /app/dist /app/dist
+COPY server/ .
+
+COPY --from=builder /app/dist ./dist
 
 ENV NODE_ENV=production
 
 EXPOSE 8081
 
-CMD ["node", "server"]
+CMD ["npm", "start"]
 

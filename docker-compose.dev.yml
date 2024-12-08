@@ -1,15 +1,17 @@
+version: "3.8"
+
 services:
   mongo:
     image: mongo
     container_name: mongo
-    ports:
-      - 27018:27017
     volumes:
       - data:/data/db
-
+    ports:
+      - 27018:27017
   app:
-    image: kishanlalbj/pm:0.5.7
-    container_name: password-manager
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - 80:80
     env_file:

@@ -91,9 +91,7 @@ router.get("/:appId/decrypt/", verifyJwt, async (req, res, next) => {
 
     const text = decryptData(application.password);
 
-    setTimeout(() => {
-      res.send({ decoded: text });
-    }, 5000);
+    res.send({ decoded: text });
   } catch (error) {
     next(error);
   }

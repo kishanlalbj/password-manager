@@ -1,11 +1,41 @@
 import { Router } from "express";
 import { decryptData, encryptData } from "../encryption.js";
 import Application from "../models/Application.js";
-import jwt from "jsonwebtoken";
 import HttpError from "../utils/HttpError.js";
 import verifyJwt from "../middlewares/verifyJwt.js";
 
 const router = Router();
+
+router.get("/search", verifyJwt, async (req, res, next) => {
+  try {
+    const { q = "", page = 1, limit = 10 } = req.query;
+    const skip = (page - 1) * limit;
+
+    const apps = await Application.find({
+      user: req.user.id,
+      name: { $regex: q, $options: "i" }
+    })
+      .select({ password: 0 })
+      .skip(skip)
+      .limit(parseInt(limit))
+      .lean()
+      .exec();
+
+    const total = await Application.countDocuments({
+      user: req.user.id,
+      name: { $regex: q, $options: "i" }
+    });
+
+    res.send({
+      apps,
+      total,
+      page: parseInt(page),
+      pages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.post("/", verifyJwt, async (req, res) => {
   try {
@@ -35,14 +65,12 @@ router.post("/", verifyJwt, async (req, res) => {
 
 router.get("/", verifyJwt, async (req, res, next) => {
   try {
-    const apps = await Application.find({ user: req.user.id }).lean().exec();
+    const apps = await Application.find({ user: req.user.id })
+      .select({ password: 0 })
+      .lean()
+      .exec();
 
-    const decrypted = apps.map((app) => {
-      return {
-        ...app
-      };
-    });
-    res.send(decrypted);
+    res.send(apps);
   } catch (error) {
     console.log(error);
     next(error);
@@ -63,7 +91,9 @@ router.get("/:appId/decrypt/", verifyJwt, async (req, res, next) => {
 
     const text = decryptData(application.password);
 
-    res.send({ decoded: text });
+    setTimeout(() => {
+      res.send({ decoded: text });
+    }, 5000);
   } catch (error) {
     next(error);
   }

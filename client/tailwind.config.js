@@ -7,7 +7,9 @@ export default {
         "custom-2": "300px 1fr"
       },
       colors: {
-        "twitter-blue": "#1DA1f2"
+        "twitter-blue": "#1DA1f2",
+        primary: "#1C1C1C",
+        secondary: "#262626"
       },
       screens: {
         xs: "475px"

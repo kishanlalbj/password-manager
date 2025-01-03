@@ -3,19 +3,19 @@ import { IApp } from "../types";
 import Button from "./Button";
 import { EyeClosedIcon, EyeIcon, SaveIcon } from "lucide-react";
 
-type ApplicationFormProps = {
+type PasswordFormProps = {
   onSave: (formData: IApp | Omit<IApp, "_id">) => void;
   onCancel: React.MouseEventHandler<HTMLButtonElement>;
   data?: Omit<IApp, "_id">;
   editMode?: boolean;
 };
 
-const ApplicationForm = ({
+const PasswordForm = ({
   onSave,
   onCancel,
   editMode = false,
   data
-}: ApplicationFormProps) => {
+}: PasswordFormProps) => {
   const [formData, setFormData] = useState<Omit<IApp, "_id">>({
     name: "",
     username: "",
@@ -42,6 +42,10 @@ const ApplicationForm = ({
       ...prev,
       [e.target.name]: e.target.value
     }));
+
+    if (e.target.name === "password" && e.target.value.length > 0) {
+      setPasswordTouched(true);
+    }
   };
 
   const handleSubmit = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -73,7 +77,8 @@ const ApplicationForm = ({
   }, [formData.password]);
 
   useEffect(() => {
-    if (passwordTouched) setPasswordErr(validatePassword());
+    const err = validatePassword();
+    if (passwordTouched) setPasswordErr(err);
 
     return () => {
       setPasswordTouched(false);
@@ -115,7 +120,6 @@ const ApplicationForm = ({
               name="password"
               value={formData.password}
               onChange={handleChange}
-              onFocus={() => setPasswordTouched(true)}
               required
             />
 
@@ -133,9 +137,7 @@ const ApplicationForm = ({
           </div>
           {passwordErr && (
             <div>
-              <p className="text-red-500 text-sm">
-                Must have atleast 8 chars, 1 number and 1 special char{" "}
-              </p>
+              <p className="text-red-500 text-sm">{passwordErr}</p>
             </div>
           )}
         </div>
@@ -165,4 +167,4 @@ const ApplicationForm = ({
   );
 };
 
-export default ApplicationForm;
+export default PasswordForm;

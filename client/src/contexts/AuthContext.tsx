@@ -1,14 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
+import { JwtPayload } from "jwt-decode";
 import { createContext, ReactNode, useContext, useState } from "react";
-
-// type User = {
-//   user: { accessToken: string } | null;
-//   setUser: React.Dispatch<SetStateAction<null | TUser>>;
-// };
 
 type TUser =
   | {
       accessToken: string;
+      decoded: JwtPayload;
     }
   | undefined;
 
@@ -21,7 +18,10 @@ const AuthContext = createContext<{
 });
 
 export const AuthContextProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<TUser>({ accessToken: "" });
+  const [user, setUser] = useState<TUser>({
+    accessToken: "",
+    decoded: {}
+  });
 
   return (
     <AuthContext.Provider value={{ user, setUser }}>

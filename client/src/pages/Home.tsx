@@ -3,9 +3,8 @@ import Button from "../components/Button";
 import Modal from "../components/Modal";
 import ListItem from "../components/ListItem";
 import { PlusIcon } from "lucide-react";
-import AppDetail from "../components/AppDetail";
 import { type IApp } from "../types";
-import ApplicationForm from "../components/ApplicationForm";
+import PasswordForm from "../components/PasswordForm";
 import SearchInput from "../components/SearchInput";
 import useAxiosInterceptors from "../hooks/useAxiosInterceptors";
 import { api } from "../utils";
@@ -15,15 +14,11 @@ type Apps = IApp[];
 const Home = () => {
   useAxiosInterceptors();
   const [showModal, setShowModal] = useState(false);
-
   const [apps, setApps] = useState<Apps>([]);
-
   const [, setAppsLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const [passwordLoading, setPasswordLoading] = useState(false);
-
-  const [selectedApp, setSelectedApp] = useState<IApp | null | undefined>(null);
+  const [error, setError] = useState("");
+  const [passwordLoading, setPasswordLoading] = useState("");
+  const [q, setQ] = useState("");
 
   const handleToggleModal = () => {
     setShowModal((prev) => {
@@ -43,71 +38,84 @@ const Home = () => {
     }
   };
 
-  const handleAppClick = (id: string) => {
-    const app: IApp | undefined = apps.find((obj) => obj._id === id);
-    setSelectedApp(app);
-  };
-
   const handleDelete = async (id: string) => {
     try {
       const res = await api.delete(`/api/${id}`);
       const cpy = [...apps];
 
       setApps(cpy.filter((app) => app._id !== res.data.id));
-      setSelectedApp(null);
     } catch (error) {
       if (error instanceof Error) console.log(error.message);
     }
   };
 
-  const handleAddApp = (app: IApp) => {
-    const index = apps.findIndex((obj) => obj._id === app._id);
-
-    const copy = [...apps];
-
-    copy[index] = app;
-    if (index != -1) {
-      setApps([...copy]);
-      setSelectedApp(app);
-    }
-  };
-
-  const handleViewPassword = async (id: string) => {
+  const handleCopyPassword = async (id: string) => {
     try {
-      setPasswordLoading(true);
+      setPasswordLoading(id);
       const res = await api.get(`/api/${id}/decrypt`);
-      const copy = [...apps];
-      const idx = copy.findIndex((e) => e._id === id);
-      if (idx != -1) copy[idx].password = res.data.decoded;
 
-      setApps(copy);
+      navigator.clipboard.writeText(res.data.decoded);
+
+      alert("Password copied to clipboard");
     } catch (error) {
-      if (error instanceof Error) console.log(error);
+      if (error instanceof Error) setError(error.message);
     } finally {
-      setPasswordLoading(false);
+      setPasswordLoading("false");
     }
   };
+
+  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setAppsLoading(true);
+      setQ(e.target.value);
+      const res = await api.get(`/api/search?q=${e.target.value}`);
+
+      setApps([...res.data.apps]);
+    } catch (error) {
+      if (error instanceof Error) setError(error.message);
+    } finally {
+      setAppsLoading(false);
+    }
+  };
+
+  // const handleViewPassword = async (id: string) => {
+  //   try {
+  //     setPasswordLoading(true);
+  //     const res = await api.get(`/api/${id}/decrypt`);
+  //     const copy = [...apps];
+  //     const idx = copy.findIndex((e) => e._id === id);
+  //     if (idx != -1) copy[idx].password = res.data.decoded;
+
+  //     setApps(copy);
+  //   } catch (error) {
+  //     if (error instanceof Error) console.log(error);
+  //   } finally {
+  //     setPasswordLoading(false);
+  //   }
+  // };
 
   useEffect(() => {
     setAppsLoading(true);
 
-    api
-      .get("/api/")
-      .then((res) => {
-        console.log(res.data);
-        setApps(res.data);
-      })
-      .catch((err) => {
-        setError(err);
-      })
-      .finally(() => {
+    const fetchPasswordApps = async () => {
+      try {
+        setAppsLoading(true);
+        const res = await api.get("/api/search?limi=100");
+
+        setApps(res.data.apps);
+      } catch (error) {
+        if (error instanceof Error) setError(error.message);
+      } finally {
         setAppsLoading(false);
-      });
+      }
+    };
+
+    fetchPasswordApps();
   }, []);
 
   return (
     <>
-      <div className="mt-14 grid sm:grid-cols-custom-2 gap-12 xs:grid-cols-1">
+      <div className="mt-14 grid sm:grid-cols-1 gap-12 xs:grid-cols-1">
         <div className="w-full">
           <div className="flex justify-between my-3 w-full">
             <h1 className="text-2xl">Your Passwords</h1>
@@ -117,7 +125,7 @@ const Home = () => {
           </div>
 
           <div className="mb-4">
-            <SearchInput />
+            <SearchInput value={q} onChange={handleSearch} />
           </div>
 
           <div className="flex justify-start flex-col">
@@ -127,29 +135,13 @@ const Home = () => {
                 <ListItem
                   key={app._id}
                   {...app}
-                  onClick={handleAppClick}
-                  current={selectedApp?._id === app._id}
+                  loading={passwordLoading}
+                  onDelete={handleDelete}
+                  onCopy={handleCopyPassword}
                 />
               );
             })}
           </div>
-        </div>
-
-        <div>
-          {!selectedApp ? (
-            <div className="flex items-center flex-col gap-4 justify-center h-full">
-              <h1 className="text-5xl font-bold">Personal Password Manager</h1>
-              <p>Maning my passwords myself</p>
-            </div>
-          ) : (
-            <AppDetail
-              app={selectedApp}
-              onDelete={handleDelete}
-              onSave={handleAddApp}
-              onViewPassword={handleViewPassword}
-              passwordLoading={passwordLoading}
-            />
-          )}
         </div>
       </div>
 
@@ -157,14 +149,18 @@ const Home = () => {
         <div className="rounded-md bg-red-500 text-white p-4">{error}</div>
       )}
 
-      <Modal title="New Application" show={showModal}>
-        <ApplicationForm
+      <Modal
+        title="New Application"
+        show={showModal}
+        onClose={() => setShowModal((prev) => !prev)}
+      >
+        <PasswordForm
           onSave={handleSaveModal}
           onCancel={(e: React.MouseEvent<HTMLButtonElement>) => {
             e.preventDefault();
             handleToggleModal();
           }}
-        ></ApplicationForm>
+        ></PasswordForm>
       </Modal>
     </>
   );

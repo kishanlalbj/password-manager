@@ -1,38 +1,43 @@
 pipeline {
     
     agent any
+    
+    tools {
+        nodejs 'node23'
+    }
 
     stages {
-        stage('Clone') {
+        stage('Checkout') {
             steps {
                 echo 'Checkout'
-                git branch: 'devops', credentialsId: 'git-password-manager', url: 'https://github.com/kishanlalbj/password-manager'
+                git branch: 'devops', credentialsId: 'git-pat', url: 'https://github.com/kishanlalbj/password-manager.git'
             }
         }
         
         stage("Prepare") {
             steps {
                 echo "installing deps"
-                bat 'npm install'
-                bat 'npm install --prefix client'
+                sh 'pwd'
+                sh 'ls'
+                sh 'npm install --prefix server'
+                sh 'npm install --prefix client'
             }
         }
         
         stage("Build") {
             steps {
                 echo "Building.."
-                bat "npm run build"
+                sh "docker build -t kishanlalbj/password-manager:latest ."
             }
         }
         
-        stage("Static Code Analysis") {
-            environment {
-                scannerHome = tool 'SonarScannerLocal';
-            }
+        stage("Deploy") {
             steps {
-              withSonarQubeEnv(credentialsId: 'sonarqube-local', installationName: 'Sonar-Local') {
-                bat "${scannerHome}/bin/sonar-scanner"
-              }
+                echo "Deploying to registry"
+                withCredentials([usernamePassword(credentialsId: 'docker-creds', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
+                        sh 'echo "$dockerPassword" | docker login -u "$dockerUser" --password-stdin'
+                        sh 'docker push kishanlalbj/password-manager:latest'
+                }       
             }
         }
     }

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useUser } from "../contexts/AuthContext";
 import { api } from "../utils";
+import { jwtDecode } from "jwt-decode";
 
 const useAxiosInterceptors = () => {
   const { user, setUser } = useUser();
@@ -25,7 +26,11 @@ const useAxiosInterceptors = () => {
 
         if (error.response.status === 401) {
           const res = await api.get("/api/auth/refresh-token");
-          setUser({ accessToken: res.data.access_token });
+          const decoded = jwtDecode(res.data.access_token);
+          setUser({
+            accessToken: res.data.access_token,
+            decoded
+          });
           originalRequest.headers.authorization = `Bearer ${res.data.access_token}`;
           originalRequest._retry = true;
 
